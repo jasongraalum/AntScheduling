@@ -1,0 +1,39 @@
+Problem Statement:
+    Map a set of resources with defined abilities and constraints onto a set of shifts with requirement abilities and constraints. Find a solution with a "good" qualitative score that meets are hard contraints
+
+    Hard Constraints(Binary Result) and Soft Constraints(Qualitative Score)
+
+Input File Requirements:
+Data needed:
+    Resources
+        Data about the resources(i.e. nurses, etc.)
+        Roles they can fill.
+        Limits
+    Shifts
+        Time details of shifts - number of shifts, start/stop time, required roles
+    Roles
+        Skills required.
+
+A schedule is a list of shifts each with a start and stop time and a role(s) required.
+
+Initial Data for Each
+Resources - Database
+    Personal
+    Role
+    Role Limits
+    Overall Limits
+
+Shifts - Database
+    Start/Top Time
+    Roll Requirement
+    Assocative Roll - scheduled at the same time - or specific overlaps.
+
+Schedule - Database
+    List of shifts.
+    Limits to shifts.
+    Master limits for Resources - max number of hours(total, consecutive
+    
+Schedule Instances
+    Solutions to the scheduling problem.
+
+
