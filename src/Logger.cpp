@@ -42,7 +42,7 @@ namespace Logger
 
     void Logger::DebugMsg( DebugLevel level, const std::string &str)
     {
-        if( (this->_debug_on == 1) && (this->_debug_level >= level) )
+        if( (this->_debug_on == 1) && (level >= this->_debug_level))
         {
             std::cout << str << std::endl;;
         }
@@ -55,7 +55,7 @@ namespace Logger
 
     void Logger::DebugMsg( DebugLevel level, const char *format, ...)
     {
-        if( (this->_debug_on == 1) && (this->_debug_level >= level) )
+        if( (this->_debug_on == 1) && (level >= this->_debug_level))
         {
             va_list args;
             va_start(args, format);

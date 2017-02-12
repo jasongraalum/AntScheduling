@@ -32,7 +32,7 @@ namespace Ant{
 
         public:
             Ant(AntGraph::pGraph *,unsigned int, unsigned int, Logger::Logger *);
-            void findDestination(int);
+            int findDestination(int);
             void backTrack();
             void moveForward();
             int isDestination();

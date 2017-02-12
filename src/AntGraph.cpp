@@ -14,6 +14,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
@@ -30,102 +31,150 @@ namespace AntGraph
     {
 
         // Elements of a Graph
-        std::size_t distAdjMatrixSize = this->distAdjMatrix.size();
-        std::size_t pherAdjMatrixSize = this->pherAdjMatrix.size();
-        std::size_t nodeCountSize = sizeof(unsigned int);
-        std::size_t trailCountSize = sizeof(unsigned int);
-        std::size_t maxDistanceSize = sizeof(int);
-        std::size_t distHeapPtrSize = sizeof(AntGraph::Heap*);
-        std::size_t DebugLogPtrSize = sizeof(Logger::Logger*);
-        std::size_t seedSize = sizeof(int);
-        std::size_t generatorSize = sizeof(std::mt19937);
 
-        std::ofstream out(filename);
+        std::ofstream outf;
+        outf.open (filename, std::ofstream::out | std::ofstream::trunc);
         // Write the size of each element to the file
 
-        out.write((char *) distAdjMatrixSize, sizeof(std::size_t));
-        out.write((char *) pherAdjMatrixSize, sizeof(std::size_t));
-        out.write((char *) nodeCountSize, sizeof(std::size_t));
-        out.write((char *) trailCountSize, sizeof(std::size_t));
-        out.write((char *) maxDistanceSize, sizeof(std::size_t));
-        out.write((char *) distHeapPtrSize, sizeof(std::size_t));
-        out.write((char *) DebugLogPtrSize, sizeof(std::size_t));
-        out.write((char *) seedSize, sizeof(std::size_t));
-        out.write((char *) generatorSize, sizeof(std::size_t));
+        std::string line;
+        DebugLog->InfoMsg("Writing graph to: ");
+        DebugLog->InfoMsg(filename);
+        DebugLog->InfoMsg("File Version: %u\n", this->fileVersion);
+        DebugLog->InfoMsg("Node Count: %u\n", this->nodeCount);
+        DebugLog->InfoMsg("Trail Count: %u\n", this->trailCount);
+        DebugLog->InfoMsg("Max Distance: %u\n", this->maxDistance);
+        DebugLog->InfoMsg("Random Seed: %u\n", this->seed);
 
-        out.write((char *) this->distAdjMatrix.size() , distAdjMatrixSize);
-        out.write((char *) this->pherAdjMatrix.size() , pherAdjMatrixSize);
-        out.write((char *) nodeCount, nodeCountSize);
-        out.write((char *) trailCount, trailCountSize);
-        out.write((char *) maxDistanceSize, maxDistance);
-        out.write((char *) &distHeap, distHeapPtrSize);
-        out.write((char *) &DebugLog, DebugLogPtrSize);
-        out.write((char *) seed, seedSize);
-        out.write((char *) generator, generatorSize);
+        outf << AG_VERSION << std::endl;
+        outf << this->nodeCount << std::endl;
+        outf << this->trailCount << std::endl;
+        outf << this->maxDistance << std::endl;
+        outf << this->seed << std::endl;
+
+        outf << "Distance Matrix" << std::endl;
+        for(unsigned int nodeA = 0; nodeA < this->nodeCount; nodeA++)
+        {
+            for(unsigned int nodeB = 0; nodeB < this->nodeCount; nodeB++)
+                outf << " " << this->getDistance(nodeA, nodeB);
+            outf << std::endl;
+        }
+
+        outf << "Pheromone Matrix" << std::endl;
+        for(unsigned int nodeA = 0; nodeA < this->nodeCount; nodeA++)
+        {
+            for(unsigned int nodeB = 0; nodeB < this->nodeCount; nodeB++)
+                outf << " " << this->getPheromone(nodeA, nodeB);
+            outf << std::endl;
+        }
+        outf.close();
+            
     }
     void pGraph::loadGraph(const std::string &filename)
     {
-        // Elements of a Graph
-        std::size_t distAdjMatrixSize = this->distAdjMatrix.size();
-        std::size_t pherAdjMatrixSize = this->pherAdjMatrix.size();
-        std::size_t nodeCountSize = sizeof(unsigned int);
-        std::size_t trailCountSize = sizeof(unsigned int);
-        std::size_t maxDistanceSize = sizeof(int);
-        std::size_t distHeapPtrSize = sizeof(AntGraph::Heap*);
-        std::size_t DebugLogPtrSize = sizeof(Logger::Logger*);
-        std::size_t seedSize = sizeof(int);
-        std::size_t generatorSize = sizeof(std::mt19937);
+        std::ifstream inf;
+        std::string line;
+        unsigned int val;
 
-        std::ifstream in(filename);
-        // Write the size of each element to the file
+        std::vector<unsigned int> us_int_vals;
+        inf.open(filename, std::ifstream::in);
 
-        in.read((char *) distAdjMatrixSize, sizeof(std::size_t));
-        in.read((char *) pherAdjMatrixSize, sizeof(std::size_t));
-        in.read((char *) nodeCountSize, sizeof(std::size_t));
-        in.read((char *) trailCountSize, sizeof(std::size_t));
-        in.read((char *) maxDistanceSize, sizeof(std::size_t));
-        in.read((char *) distHeapPtrSize, sizeof(std::size_t));
-        in.read((char *) DebugLogPtrSize, sizeof(std::size_t));
-        in.read((char *) seedSize, sizeof(std::size_t));
-        in.read((char *) generatorSize, sizeof(std::size_t));
+        for(int i = 0; i < 5; i++)
+        {
+            inf >> val;
+            us_int_vals.push_back(val);
+        }
+        std::getline(inf, line);
 
-        in.read((char *) distAdjMatrix , distAdjMatrixSize);
-        in.read((char *) pherAdjMatrix , pherAdjMatrixSize);
-        in.read((char *) nodeCount, nodeCountSize);
-        in.read((char *) trailCount, trailCountSize);
-        in.read((char *) maxDistanceSize, maxDistance);
-        in.read((char *) &distHeap, distHeapPtrSize);
-        in.read((char *) &DebugLog, DebugLogPtrSize);
-        in.read((char *) seed, seedSize);
-        in.read((char *) generator, generatorSize);
-    }
+        DebugLog->InfoMsg("Reading graph from: %s\n", filename);
+        this->fileVersion = us_int_vals.at(0);
+        DebugLog->InfoMsg("File Version: %u\n", this->fileVersion);
+        this->nodeCount = us_int_vals.at(1);
+        DebugLog->InfoMsg("Node Count: %u\n", this->nodeCount);
+        this->trailCount = us_int_vals.at(2);
+        DebugLog->InfoMsg("Trail Count: %u\n", this->trailCount);
+        this->maxDistance = us_int_vals.at(3);
+        DebugLog->InfoMsg("Max Distance: %u\n", this->maxDistance);
+        this->seed = us_int_vals.at(4);
+        DebugLog->InfoMsg("Random Seed: %u\n", this->seed);
 
-    void pGraph::loadGraph(const std::string &filename)
-    {
-        std::ifstream in(filename);
-        in.seekg (0,in.end);
-        long size = in.tellg();
-        std::cout << "Reading " << size << "bytes" << std::endl;
-        in.seekg(0);
-        in.read((char *) this, size);
+
+        // Resize and initialize Pheromone Matrix
+        this->distAdjMatrix.resize(nodeCount*nodeCount);
+        std::fill(this->distAdjMatrix.begin(), this->distAdjMatrix.end(), 0);
+        
+        //
+        // Get Distance Matrix Header
+        //
+        std::getline(inf, line);
+
+        for(unsigned int nodeA = 0; nodeA < this->nodeCount; nodeA++)
+        {
+            std::getline(inf, line);
+
+            std::stringstream lineStream(line);
+            unsigned int nodeB = 0;
+            while(lineStream >> val)
+            {
+                this->distAdjMatrix.at(this->getMatrixIndex(nodeA, nodeB)) = val;
+                nodeB++;
+            }
+        }
+
+        // Resize and initialize Pheromone Matrix
+        this->pherAdjMatrix.resize(nodeCount*nodeCount);
+        std::fill(this->pherAdjMatrix.begin(), this->pherAdjMatrix.end(), 0);
+
+        //
+        // Get Pheromone Matrix Header
+        //
+        std::getline(inf, line);
+
+        for(unsigned int nodeA = 0; nodeA < this->nodeCount; nodeA++)
+        {
+            std::getline(inf, line);
+
+            std::stringstream lineStream(line);
+            unsigned int nodeB = 0;
+            while(lineStream >> val)
+            {
+                this->pherAdjMatrix.at(this->getMatrixIndex(nodeA, nodeB)) = val;
+                nodeB++;
+            }
+        }
+
+        inf.close();
     }
 
     unsigned int pGraph::chooseNextNode(unsigned int srcNode, unsigned int prevNode)
     {
-        std::vector<unsigned int> nodes;
+        std::vector<unsigned int> *nodes;
 
-        DebugLog->InfoMsg("Finding next node from %u\n", srcNode);
+        DebugLog->DebugMsg(Logger::DebugLevel::MED, "Finding next node from %u\n", srcNode);
         
         // Get the adjancent nodes
         nodes = this->getAdjNodes(srcNode);
+        if(nodes->size() == 0)
+            return(0);
 
         // Remove previous node
-        DebugLog->InfoMsg("Nodes(%d) to %u:\n", nodes.size(), srcNode);
-        for(std::vector<unsigned int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
+        DebugLog->DebugMsg(Logger::DebugLevel::MED, "Removing Previous\nNodes(%d) to %u:\n", nodes->size(), srcNode);
+        for(unsigned int it = 0; it < nodes->size(); it++)
         {
-            DebugLog->InfoMsg("Checking node: %u\n", *it);
-            if(*it == prevNode)
-                nodes.erase(it);
+            unsigned int node = nodes->at(it);
+            DebugLog->DebugMsg(Logger::DebugLevel::MED, "Checking node: %u\n", node);
+            if(node == prevNode)
+                nodes->erase(nodes->begin() + it);
+        }
+        DebugLog->DebugMsg(Logger::DebugLevel::MED, "Finished checking node\n");
+
+        //
+        // If the node has only 1 adjacent node(which must be the previous node),
+        // go back to the previous node and try again.
+        //
+        if(nodes->size() <= 1)
+        {
+            DebugLog->DebugMsg(Logger::DebugLevel::HIGH, "Dead end found at %u(%u)\n", srcNode, nodes->at(0));
+            return(prevNode);
         }
 
         // Get pheromone numbers to generate distribution
@@ -133,17 +182,16 @@ namespace AntGraph
 
         // Normalize to 100 and gen random number between 0 and 100
         int total_pheromone = 0;
-        //for(std::vector<int>::iterator it = pheromones->begin(); it != pheromones->end(); ++it)
         for(unsigned int it = 0; it < pheromones->size(); ++it)
         {
-            DebugLog->InfoMsg("%u\tAdding %d\tTotal = %d\n", nodes.at(it), pheromones->at(it), total_pheromone);
+            DebugLog->DebugMsg(Logger::DebugLevel::MED, "%u\tAdding %d\tTotal = %d\n", nodes->at(it), pheromones->at(it), total_pheromone);
             total_pheromone += pheromones->at(it);
         }
-        DebugLog->InfoMsg("Total pheromone: %d\n", total_pheromone);
+        DebugLog->DebugMsg(Logger::DebugLevel::MED, "Total pheromone: %d\n", total_pheromone);
 
         int weighted_pheromone = this->getRandomNumber(0, total_pheromone);
 
-        DebugLog->InfoMsg("Weighted Pheromone = %d\n", weighted_pheromone);
+        DebugLog->DebugMsg(Logger::DebugLevel::MED, "Weighted Pheromone = %d\n", weighted_pheromone);
 
         total_pheromone = 0;
         unsigned int index = 0;
@@ -153,26 +201,29 @@ namespace AntGraph
             index++;
         } while(total_pheromone < weighted_pheromone);
 
-        return((unsigned int) nodes.at(index-1));
+        return((unsigned int) nodes->at(index-1));
     }
 
-    std::vector<unsigned int> pGraph::getAdjNodes(unsigned int node)
+    std::vector<unsigned int> *pGraph::getAdjNodes(unsigned int node)
     {
-        std::vector<unsigned int> nodes;
+        std::vector<unsigned int> *nodes = new std::vector<unsigned int>;
+        DebugLog->DebugMsg(Logger::DebugLevel::MED, "Adjacent nodes: ");
         for(unsigned int nodeB = 0; nodeB < this->nodeCount; nodeB++)
         {
             if(this->getDistance(node, nodeB) > 0)
             {
-                nodes.push_back(nodeB);
+                nodes->push_back(nodeB);
+                DebugLog->DebugMsg(Logger::DebugLevel::MED, "%u ", nodeB);
             }
         }
+        DebugLog->DebugMsg(Logger::DebugLevel::MED, "\n");
         return(nodes);
     }
 
-    std::vector<int>* pGraph::getPheromones(unsigned int src_node, std::vector<unsigned  int> node_list)
+    std::vector<int>* pGraph::getPheromones(unsigned int src_node, std::vector<unsigned  int> *node_list)
     {
         std::vector<int> *pheromone_list =new std::vector<int>();
-        for(std::vector<unsigned int>::iterator it = node_list.begin(); it != node_list.end(); ++it)
+        for(std::vector<unsigned int>::iterator it = node_list->begin(); it != node_list->end(); ++it)
         {
             pheromone_list->push_back(getPheromone(src_node,*it));
         }
@@ -221,6 +272,7 @@ namespace AntGraph
         this->nodeCount = nodeCount;
         this->maxDistance = maxDist;
         this->trailCount = trailCount;
+        this->fileVersion = AG_VERSION;
 
         this->DebugLog = Log;
 
@@ -268,7 +320,7 @@ namespace AntGraph
 
         for(unsigned int i = 0; i < this->trailCount; ++i)
         {
-            DebugLog->DebugMsg(Logger::DebugLevel::HIGH, "Adding trail # %d\n", i);
+            DebugLog->DebugMsg(Logger::DebugLevel::MED, "Adding trail # %d\n", i);
 
             nodeA = this->getRandomNumber(0, (this->nodeCount-1));
             do {
@@ -277,8 +329,8 @@ namespace AntGraph
             } while(nodeB == nodeA);
             loops--;
 
-            DebugLog->DebugMsg(Logger::DebugLevel::HIGH, "Node 1: %d/n", nodeA); 
-            DebugLog->DebugMsg(Logger::DebugLevel::HIGH, "Node s: %d/n", nodeB); 
+            DebugLog->DebugMsg(Logger::DebugLevel::LOW, "Node 1: %d\n", nodeA); 
+            DebugLog->DebugMsg(Logger::DebugLevel::LOW, "Node 2: %d\n", nodeB); 
 
             if(this->distAdjMatrix.at(this->getMatrixIndex(nodeA, nodeB)) == 0)
             {
@@ -420,6 +472,7 @@ namespace AntGraph
 
     void pGraph::printDistMatrix()
     {
+        std::cout << "Distance Matrix" << std::endl;
         for(unsigned int nodeA = 0; nodeA < this->nodeCount; nodeA++)
         {
             std::cout << nodeA << ": ";
@@ -431,6 +484,7 @@ namespace AntGraph
     }
     void pGraph::printPherMatrix()
     {
+        std::cout << "Pheromone Matrix" << std::endl;
         for(unsigned int nodeA = 0; nodeA < this->nodeCount; nodeA++)
         {
             std::cout << nodeA << ": ";

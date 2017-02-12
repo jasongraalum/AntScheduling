@@ -20,6 +20,9 @@
 #ifndef ANTHEAP_H
 #define ANTHEAP_H
 
+#define AG_VERSION 1
+#define MAX_LINE_LEN 256
+
 namespace AntGraph {
 
     class Heap {
@@ -55,14 +58,15 @@ namespace AntGraph {
             unsigned int nodeCount;
             unsigned int trailCount;
 
-            int maxDistance;
+            unsigned int maxDistance;
 
             Heap *distHeap;
             Logger::Logger *DebugLog;
 
-            int seed;
+            unsigned int seed;
             std::mt19937 generator;
 
+            unsigned int fileVersion;
         public:
             pGraph();
             pGraph(unsigned int, int, unsigned int, Logger::Logger*);
@@ -73,7 +77,7 @@ namespace AntGraph {
 
             void addPheromone(unsigned int, unsigned int, int);
             int getPheromone(unsigned int, unsigned int);
-            std::vector<int>* getPheromones(unsigned int, std::vector<unsigned int>);
+            std::vector<int>* getPheromones(unsigned int, std::vector<unsigned int>*);
 
             void setDistance(unsigned int, unsigned int, int);
             int getDistance(unsigned int, unsigned int);
@@ -81,7 +85,7 @@ namespace AntGraph {
             void DikstraSSSP(int, unsigned int);
 
             unsigned int chooseNextNode(unsigned int, unsigned int);
-            std::vector<unsigned int> getAdjNodes(unsigned int);
+            std::vector<unsigned int> *getAdjNodes(unsigned int);
 
             void saveGraph(const std::string &);
             void loadGraph(const std::string &);
