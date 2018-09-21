@@ -19,7 +19,8 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
-#include <chrono>
+//#include <chrono>
+#include <time>
 #include <random>
 
 #include "AntGraph.h"
@@ -302,7 +303,7 @@ namespace AntGraph
 
         myclock::duration d = myclock::now() - beginning;
         this->seed = d.count();
-        std::mt19937 gen (this->seed);
+        std::uniform_int_distribution gen (this->seed);
         this->generator = gen;
     }
 

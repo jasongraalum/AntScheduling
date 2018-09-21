@@ -64,7 +64,7 @@ namespace AntGraph {
             Logger::Logger *DebugLog;
 
             unsigned int seed;
-            std::mt19937 generator;
+            std::default_random_engine generator;
 
             unsigned int fileVersion;
         public:

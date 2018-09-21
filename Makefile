@@ -9,7 +9,8 @@ TEST_DIR = $(LWD)/test
 
 
 CC = g++
-CFLAGS = -std=c++11 -g -Wall -I$(INC_DIR)
+#CFLAGS = -std=c++11 -stdlib=libstdc++ -g -Wall -I$(INC_DIR)
+CFLAGS = -std=c++0x -stdlib=libstdc++ -g -Wall -I$(INC_DIR)
 
 COMMON_OBJS = 
 ANT_SRC = $(SRC_DIR)/Ant.cpp
